@@ -11,63 +11,73 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Log in - My Faves</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
-        <section>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
-                <hr />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" aria-required="true" placeholder="name@example.com" />
-                    <label for="Input.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
-                </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
-                </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Remember me
-                    </label>
-                </div>
+<div class="container-fluid px-0 auth-theme">
+    <div class="row g-0 rounded-3 overflow-hidden shadow-sm">
+
+        <!-- LEFT HALF: LOGIN FORM COLUMN -->
+        <div class="col-12 col-lg-6 d-flex flex-column justify-content-between bg-white p-4 p-md-5">
+
+            <BrandHeader />
+
+            <!-- Form Area -->
+            <div class="mx-auto w-100 my-4" style="max-width: 380px;">
+                <h1 class="main-heading mb-2">Welcome back.</h1>
+                <p class="sub-heading mb-4">Your next movie night is waiting. Log in to pick up where you left off.</p>
+
+                <StatusMessage Message="@errorMessage" />
+
+                <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger small" role="alert" />
+
+                    <div class="mb-3">
+                        <label for="Input.Email" class="form-label input-label">Email address</label>
+                        <InputText id="Input.Email" @bind-Value="Input.Email" class="form-control form-control-lg figma-input" autocomplete="username" aria-required="true" placeholder="jamie.lee@example.com" />
+                        <ValidationMessage For="() => Input.Email" class="text-danger small" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Input.Password" class="form-label input-label">Password</label>
+                        <InputText id="Input.Password" type="password" @bind-Value="Input.Password" class="form-control form-control-lg figma-input" autocomplete="current-password" aria-required="true" placeholder="Enter your password" />
+                        <ValidationMessage For="() => Input.Password" class="text-danger small" />
+                    </div>
+
+                    <!-- Remember me + Forgot password on the same row -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check mb-0">
+                            <InputCheckbox id="Input.RememberMe" @bind-Value="Input.RememberMe" class="form-check-input figma-checkbox" />
+                            <label for="Input.RememberMe" class="form-check-label input-label fw-normal">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="Account/ForgotPassword" class="redirect-link small">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-lg w-100 btn-brand-purple d-flex align-items-center justify-content-center gap-2 mb-3">
+                        <img src="images/icons/arrow-right.svg" alt="" class="icon-btn" />
+                        <span>Log in</span>
+                    </button>
+
+                    <p class="d-flex align-items-center justify-content-center gap-2 notice-text mb-4">
+                        <img src="images/icons/lock-keyhole.svg" alt="" class="icon-lock" />
+                        <span>Secure access to your personal collection.</span>
+                    </p>
+                </EditForm>
+
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    <span class="redirect-prompt">New to My Faves? </span>
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" class="redirect-link">Create an account</a>
                 </div>
-                <hr />
-                <div class="d-flex flex-column">
-                    <span class="text-secondary mx-auto mt-2">OR</span>
-                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
-                </div>
-                <hr />
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+            </div>
+
+            <AppFooter />
+        </div>
+
+        <!-- RIGHT HALF: HERO SHOWCASE COLUMN -->
+        <AuthHeroPanel />
+
     </div>
 </div>
 

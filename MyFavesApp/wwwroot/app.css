@@ -1,3 +1,16 @@
+@import url('https://googleapis.com');
+
+:root {
+    /* Main Branding Palette Tokens */
+    --color-brand-purple: #713F69;
+    --color-dark-plum: #30232F;
+    --color-text-dark: #28232B;
+    --color-text-muted: #6D6670;
+    --color-text-light-muted: #D6CDD5;
+    --color-text-accent-muted: #E4DCE3;
+    --color-badge-pink: #D8BCD2;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -57,4 +70,172 @@ h1:focus {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+/* Skin overrides on top of Bootstrap */
+.auth-theme {
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.brand-title {
+    color: var(--color-text-dark);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.brand-icon-box {
+    width: 36px;
+    height: 36px;
+    background-color: var(--color-brand-purple);
+    border-radius: 10px;
+}
+
+.hero-plum-bg {
+    background-color: var(--color-dark-plum);
+}
+
+.figma-input {
+    border: 1px solid #8C818C;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.figma-input:focus {
+    border-color: var(--color-brand-purple);
+    box-shadow: 0 0 0 0.2rem rgba(113, 63, 105, 0.2);
+}
+
+.btn-brand-purple {
+    background-color: var(--color-brand-purple);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    height: 48px;
+}
+
+.btn-brand-purple:hover {
+    background-color: #5d3356;
+    color: #ffffff;
+}
+
+/* Left Column & Footer Typography */
+.main-heading {
+    color: var(--color-text-dark);
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.sub-heading {
+    color: var(--color-text-muted);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.input-label {
+    color: var(--color-text-dark);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.input-instruction,
+.notice-text,
+.copyright {
+    color: var(--color-text-muted);
+    font-size: 12px;
+}
+
+.redirect-prompt {
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+/* Hero Panel Movie Poster Cards */
+.poster-card {
+    width: 130px;
+    height: 195px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+.poster-blank-slate {
+    width: 130px;
+    height: 195px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+/* Right-side Hero Typography & Link Colors */
+.badge-text {
+    color: var(--color-badge-pink, #D8BCD2);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
+}
+
+.hero-title {
+    color: #ffffff;
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.18;
+}
+
+.hero-description {
+    color: var(--color-text-light-muted, #D6CDD5);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.prop-text {
+    color: var(--color-text-accent-muted, #E4DCE3);
+    font-size: 14px;
+}
+
+.redirect-link {
+    color: var(--color-brand-purple, #713F69);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.redirect-link:hover {
+    text-decoration: underline;
+}
+
+/* SVG Icon Sizing */
+.icon-brand {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-badge {
+    width: 15px;
+    height: 15px;
+}
+
+.icon-btn {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-lock {
+    width: 14px;
+    height: 14px;
+}
+
+.icon-check {
+    width: 16px;
+    height: 16px;
+}
+
+/* Brand Purple Checkbox Override */
+.figma-checkbox:checked {
+    background-color: var(--color-brand-purple, #713F69);
+    border-color: var(--color-brand-purple, #713F69);
+}
+
+.figma-checkbox:focus {
+    border-color: var(--color-brand-purple, #713F69);
+    box-shadow: 0 0 0 0.2rem rgba(113, 63, 105, 0.2);
 }
