@@ -15,42 +15,69 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register - My Faves</PageTitle>
 
-<h1>Register</h1>
+<div class="container-fluid px-0 auth-theme">
+    <div class="row g-0 rounded-3 overflow-hidden shadow-sm">
 
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+        <!-- LEFT HALF: FORM COLUMN (Scaffold Col 1) -->
+        <div class="col-12 col-lg-6 d-flex flex-column justify-content-between bg-white p-4 p-md-5">
+            
+            <BrandHeader />
+
+            <!-- Centered Form Area -->
+            <div class="mx-auto w-100 my-4" style="max-width: 380px;">
+                <h1 class="main-heading mb-2">Make room for your faves.</h1>
+                <p class="sub-heading mb-4">Create your free account and start a collection that feels like you.</p>
+
+                <StatusMessage Message="@Message" />
+
+                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger small" role="alert" />
+
+                    <div class="mb-3">
+                        <label for="Input.Email" class="form-label input-label">Email address</label>
+                        <InputText id="Input.Email" @bind-Value="Input.Email" class="form-control form-control-lg figma-input" autocomplete="username" aria-required="true" placeholder="you@example.com" />
+                        <ValidationMessage For="() => Input.Email" class="text-danger small" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Input.Password" class="form-label input-label">Password</label>
+                        <InputText id="Input.Password" type="password" @bind-Value="Input.Password" class="form-control form-control-lg figma-input" autocomplete="new-password" aria-required="true" placeholder="Create a password" />
+                        <div class="form-text input-instruction">Use at least 6 characters, including a letter, number, and symbol.</div>
+                        <ValidationMessage For="() => Input.Password" class="text-danger small" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="Input.ConfirmPassword" class="form-label input-label">Confirm password</label>
+                        <InputText id="Input.ConfirmPassword" type="password" @bind-Value="Input.ConfirmPassword" class="form-control form-control-lg figma-input" autocomplete="new-password" aria-required="true" placeholder="Confirm your password" />
+                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger small" />
+                    </div>
+
+                    <button type="submit" class="btn btn-lg w-100 btn-brand-purple d-flex align-items-center justify-content-center gap-2 mb-3">
+                        <img src="images/icons/arrow-right.svg" alt="" class="icon-btn" />
+                        Create account
+                    </button>
+
+                    <p class="d-flex align-items-center justify-content-center gap-2 notice-text mb-4">
+                        <img src="images/icons/lock-keyhole.svg" alt="" class="icon-lock" />
+                        Your collection is private by default.
+                    </p>
+                </EditForm>
+
+                <div class="text-center">
+                    <span class="redirect-prompt">Already have an account? </span>
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" class="redirect-link">Log in</a>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+
+            <AppFooter />
+        </div>
+
+        <!-- RIGHT HALF: HERO SHOWCASE COLUMN (Scaffold Col 2) -->
+        <AuthHeroPanel />
+
     </div>
 </div>
 
