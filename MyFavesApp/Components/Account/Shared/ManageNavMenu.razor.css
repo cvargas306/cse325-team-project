@@ -1,0 +1,23 @@
+::deep .manage-nav-link {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: var(--color-text-dark);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+::deep .manage-nav-link:hover {
+    background-color: var(--color-bg-canvas);
+    color: var(--color-text-dark);
+}
+
+::deep .manage-nav-link.active {
+    background-color: var(--color-bg-active-pill);
+    color: var(--color-brand-purple);
+    font-weight: 600;
+}

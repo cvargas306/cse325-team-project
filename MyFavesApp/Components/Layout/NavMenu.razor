@@ -1,92 +1,89 @@
-﻿@implements IDisposable
+﻿<div class="sidebar-shell">
+    <!-- Brand Header (reusing your existing component) -->
+    <div class="sidebar-brand">
+        <BrandHeader />
+    </div>
 
-@inject NavigationManager NavigationManager
+    <!-- Mobile Hamburger Toggler (Real inline SVG, zero data-URI CSS) -->
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox" aria-label="Toggle navigation" />
+    <label for="nav-toggle" class="navbar-toggler" title="Navigation menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#28232B" stroke-width="2.2"
+             stroke-linecap="round" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
+    </label>
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">MyFavesApp</a>
+
+    <!-- Navigation & Watchlists -->
+    <div class="nav-scrollable" onclick="document.getElementById('nav-toggle').click()">
+        <div class="sidebar-body">
+            <!-- Primary Links -->
+            <nav class="nav flex-column gap-2">
+                <AuthorizeView>
+                    <Authorized>
+                        <NavLink class="figma-nav-link" href="" Match="NavLinkMatch.All">
+                            <img src="images/icons/layout-grid.svg" alt="" class="icon-badge" />
+                            <span>My Faves Hub</span>
+                        </NavLink>
+
+                        <NavLink class="figma-nav-link" href="search">
+                            <img src="images/icons/search.svg" alt="" class="icon-badge" />
+                            <span>Search movies</span>
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>                
+            </nav>
+
+            <AuthorizeView>
+                <Authorized>
+                    <!-- Your Watchlists -->
+                    <div class="watchlists-section">
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            <span class="section-label">YOUR WATCHLISTS</span>
+                            <button type="button" class="btn btn-link p-0 text-decoration-none watchlist-add-icon"
+                                    title="Create watchlist">
+                                <img src="images/icons/plus-2.svg" alt="" class="icon-badge" />
+                            </button>
+                        </div>
+
+                        <div class="d-flex flex-column gap-1">
+                            <NavLink class="figma-nav-link" href="watchlist/family-night">
+                                <img src="images/icons/users.svg" alt="" class="icon-badge" />
+                                <span class="flex-grow-1 text-truncate">Family Night</span>
+                                <span class="watchlist-count">4</span>
+                            </NavLink>
+
+                            <NavLink class="figma-nav-link" href="watchlist/sci-fi-favorites">
+                                <img src="images/icons/orbit.svg" alt="" class="icon-badge" />
+                                <span class="flex-grow-1 text-truncate">Sci-Fi Favorites</span>
+                                <span class="watchlist-count">4</span>
+                            </NavLink>
+
+                            <button type="button" class="new-watchlist-btn">
+                                <img src="images/icons/plus-1.svg" alt="" class="icon-badge" />
+                                <span>New watchlist</span>
+                            </button>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>     
+
+            <!-- Philosophy Callout Card -->
+            <div class="collection-callout d-none d-sm-flex">
+                <img src="images/icons/heart.svg" alt="" class="icon-badge" />
+                <div class="callout-title">Your taste. Your collection.</div>
+                <p class="callout-desc mb-0">Only the movies you choose. No recommendations, no noise.</p>
+            </div>
+
+            <!-- Bottom Help Link -->
+            <div class="mt-auto">
+                <a href="help" class="help-link text-decoration-none">
+                    <img src="images/icons/circle-help.svg" alt="" class="icon-badge" />
+                    <span>Help &amp; feedback</span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
-
-@code {
-    private string? currentUrl;
-
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-}
-

@@ -2,26 +2,123 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-bg-canvas);
 }
 
 main {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    /* background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); */
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--color-border-subtle);
 }
-
 .top-row {
-    background-color: #f7f7f7;
+    /* background-color: #f7f7f7;
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
+    align-items: center; */
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--color-border-subtle);
+    /* height: 80px; */
+    height: 3.5rem;
+    padding: 0 40px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+}
+.topbar-section {
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-weight: 400;
+}
+.user-menu-btn:focus {
+    box-shadow: none;
+}
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-bg-active-pill);
+    color: var(--color-brand-purple);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.user-display-name {
+    color: var(--color-text-dark);
+    font-size: 13px;
+    font-weight: 600;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.user-details-menu>summary::-webkit-details-marker {
+    display: none;
+}
+.user-details-menu {
+    position: relative;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
+.user-menu-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.user-menu-summary::-webkit-details-marker {
+    display: none;
+}
+
+.user-menu-summary:hover {
+    background-color: var(--color-bg-canvas);
+}
+
+.user-dropdown-list {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 180px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    padding: 6px 0;
+    z-index: 1050;
+}
+
+.user-dropdown-item {
+    display: block;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--color-text-dark);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.user-dropdown-item:hover {
+    background-color: var(--color-bg-canvas);
+}
+.content {
+    padding: 36px 40px;
+    flex: 1;
+}
+
+    /* .top-row ::deep a, .top-row ::deep .btn-link {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
@@ -34,16 +131,24 @@ main {
     .top-row ::deep a:first-child {
         overflow: hidden;
         text-overflow: ellipsis;
-    }
+    } */
 
 @media (max-width: 640.98px) {
-    .top-row {
+    /* .top-row {
         justify-content: space-between;
     }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
         margin-left: 0;
+    } */
+    .top-row {
+        padding: 0 16px;
+        height: 64px;
     }
+
+    .content {
+        padding: 24px 16px;
+    }     
 }
 
 @media (min-width: 641px) {
@@ -52,18 +157,26 @@ main {
     }
 
     .sidebar {
-        width: 250px;
+        /* width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0; */
+        width: 224px;
+        flex-shrink: 0;
         height: 100vh;
         position: sticky;
         top: 0;
+        border-bottom: none;
+        border-right: 1px solid var(--color-border-subtle);        
     }
 
     .top-row {
         position: sticky;
         top: 0;
-        z-index: 1;
+        /* z-index: 1; */
+        z-index: 10;
     }
-
+/* 
     .top-row.auth ::deep a:first-child {
         flex: 1;
         text-align: right;
@@ -73,7 +186,7 @@ main {
     .top-row, article {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
-    }
+    } */
 }
 
 #blazor-error-ui {

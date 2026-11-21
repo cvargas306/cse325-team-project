@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager NavigationManager
 
 <div class="page">
     <div class="sidebar">
@@ -6,9 +8,48 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        <header class="top-row">
+            <!-- Left: Dynamic Page Title -->
+            <div class="d-flex align-items-center gap-2 topbar-section">
+                <img src="images/icons/folder-heart.svg" alt="" class="icon-badge" />
+                <span>
+                    @GetPageTitle()
+                </span>
+            </div>
+
+            <!-- Right: User Placeholder -->
+            <div class="d-flex align-items-center">
+                <AuthorizeView>
+                    <Authorized>
+                        <details class="position-relative user-details-menu">
+                            <summary class="btn user-menu-btn d-flex align-items-center gap-2 border-0 p-1 list-unstyled">
+                                <div class="user-avatar">
+                                    @GetInitials(context.User.Identity?.Name)
+                                </div>
+                                <span class="user-display-name d-none d-md-inline">@context.User.Identity?.Name</span>
+                                <img src="images/icons/chevron-down.svg" alt="" class="icon-badge" />
+                            </summary>
+
+                            <div class="user-dropdown-list shadow-sm">
+                                <a class="user-dropdown-item" href="Account/Manage">Account settings</a>
+                                <hr class="my-1 border-light-subtle" />
+                                <form action="Account/Logout" method="post" class="m-0">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                    <button type="submit" class="user-dropdown-item text-danger w-100 text-start border-0 bg-transparent">Log out</button>
+                                </form>
+                            </div>
+                        </details>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="Account/Login" class="btn btn-sm btn-outline-secondary">Log in</a>
+                            <a href="Account/Register" class="btn btn-sm text-white" style="background-color: var(--color-brand-purple);">Register</a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </header>
 
         <article class="content px-4">
             @Body
@@ -21,3 +62,57 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    // TODO: Trello backlog - replace with user's actual First/Last name property
+    private static string GetInitials(string? identityName)
+    {
+        if (string.IsNullOrWhiteSpace(identityName)) return "MF";
+        var handle = identityName.Split('@')[0];
+        var parts = handle.Split(new[] { '.', '_', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length >= 2)
+            return $"{char.ToUpperInvariant(parts[0][0])}{char.ToUpperInvariant(parts[1][0])}";
+
+        return handle.Length >= 2
+            ? handle[..2].ToUpperInvariant()
+            : handle.ToUpperInvariant();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private string GetPageTitle()
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var path = relativePath.Split('?')[0].Trim('/').ToLowerInvariant();
+
+        return path switch
+        {
+            "" => "My Faves Hub",
+            "search" => "Search movies",
+            "account/login" => "Log in",
+            "account/register" => "Create an account",
+            var p when p.StartsWith("account/") => "Account settings",
+            var p when p.StartsWith("movie/") => "Movie details",
+            var p when p.StartsWith("watchlist/") => "Watchlist",
+            "help" => "Help & feedback",
+            _ => "My Faves"
+        };
+    }
+}
