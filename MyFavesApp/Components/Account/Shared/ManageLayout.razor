@@ -1,17 +1,22 @@
 ﻿@inherits LayoutComponentBase
 @layout MyFavesApp.Components.Layout.MainLayout
 
-<h1>Manage your account</h1>
+<div class="mx-auto manage-theme" style="max-width: 960px;">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="main-heading mb-1">Account settings</h1>
+        <p class="sub-heading mb-0">Manage your profile, email, password, and security preferences.</p>
+    </div>
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-lg-3">
-            <ManageNavMenu />
-        </div>
-        <div class="col-lg-9">
-            @Body
+    <!-- Clean White Figma Card -->
+    <div class="bg-white rounded-3 p-4 p-md-5" style="border: 1px solid var(--color-border-subtle);">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <ManageNavMenu />
+            </div>
+            <div class="col-md-9 ps-md-4 border-start-md">
+                @Body
+            </div>
         </div>
     </div>
 </div>
