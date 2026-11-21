@@ -1,0 +1,143 @@
+.search-page-container {
+    max-width: 960px;
+}
+
+.figma-search-bar {
+    height: 60px;
+    padding: 0 10px 0 18px;
+    background-color: #ffffff;
+    border: 2px solid var(--color-brand-purple);
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px rgba(113, 63, 105, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.figma-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 17px;
+    color: var(--color-text-dark);
+    background: transparent;
+    min-width: 0;
+}
+
+.clear-search-btn {
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 8px;
+}
+
+.clear-search-btn:hover {
+    color: var(--color-text-dark);
+}
+
+.filter-pill {
+    height: 40px;
+    padding: 0 14px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.filter-select {
+    border: none;
+    background: transparent;
+    color: var(--color-text-dark);
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+}
+
+.results-heading {
+    color: var(--color-text-dark);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.movie-result-card {
+    padding: 18px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.result-poster {
+    width: 88px;
+    height: 132px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: var(--color-bg-canvas);
+}
+
+.result-title {
+    color: var(--color-text-dark);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.result-meta {
+    color: var(--color-text-muted);
+    font-size: 13px;
+}
+
+.result-actions {
+    width: 184px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-outline-plum {
+    height: 44px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    color: var(--color-brand-purple);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-outline-plum:hover {
+    background-color: var(--color-bg-active-pill);
+    border-color: var(--color-brand-purple);
+    color: var(--color-brand-purple);
+}
+
+.empty-state-card {
+    padding: 36px 24px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+@media (max-width: 640.98px) {
+    .movie-result-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .result-actions {
+        width: 100%;
+    }
+}
