@@ -1,7 +1,16 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
-<PageTitle>Home</PageTitle>
+<AuthorizeView>
+    <NotAuthorized>
+        @{
+            NavigationManager.NavigateTo("Account/Register", replace: true);
+        }
+    </NotAuthorized>
+    <Authorized>
+        <PageTitle>My Faves Hub - My Faves</PageTitle>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+        <!-- Your My Faves Hub content goes here -->
+        <h1 class="main-heading">Welcome to My Faves Hub</h1>
+    </Authorized>
+</AuthorizeView>

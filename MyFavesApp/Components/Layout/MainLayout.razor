@@ -33,9 +33,9 @@
                             <div class="user-dropdown-list shadow-sm">
                                 <a class="user-dropdown-item" href="Account/Manage">Account settings</a>
                                 <hr class="my-1 border-light-subtle" />
-                                <form action="Account/Logout" method="post" class="m-0">
+                                <form action="Account/Logout" method="post" data-enhance="false" class="m-0">
                                     <AntiforgeryToken />
-                                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                    <input type="hidden" name="ReturnUrl" value="Account/Login" />
                                     <button type="submit" class="user-dropdown-item text-danger w-100 text-start border-0 bg-transparent">Log out</button>
                                 </form>
                             </div>
