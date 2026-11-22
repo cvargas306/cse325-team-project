@@ -1,0 +1,187 @@
+@page "/search"
+@rendermode InteractiveServer
+@using MyFavesApp.Services
+@inject OmdbService OmdbService
+
+<PageTitle>Search movies - My Faves</PageTitle>
+
+<div class="search-page-container">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="main-heading mb-2">Find a movie. Make it a fave.</h1>
+        <p class="sub-heading mb-0">Search for a title you have in mind, then give it a place in your collection.</p>
+    </div>
+
+    <!-- Search Input Box (Figma Plum Focus Ring) -->
+    <div class="mb-3">
+        <label for="movieSearchInput" class="form-label input-label mb-2">Search by movie title</label>
+        <div class="figma-search-bar">
+            <!-- SVG PLACEHOLDER: search-purple.svg -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#713F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+            </svg>
+
+            <input id="movieSearchInput"
+                   type="text"
+                   class="figma-search-input"
+                   placeholder="e.g., Interstellar, Paddington..."
+                   @bind="searchQuery"
+                   @bind:event="oninput"
+                   @onkeydown="HandleKeyDown" />
+
+            @if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                <button type="button" class="clear-search-btn" @onclick="ClearSearch">
+                    <span>Clear</span>
+                    <!-- SVG PLACEHOLDER: x-close.svg -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                </button>
+            }
+
+            <button type="button" class="btn btn-brand-purple px-4" style="height: 42px;" @onclick="ExecuteSearch" disabled="@isLoading">
+                @(isLoading ? "Searching..." : "Search")
+            </button>
+        </div>
+        <div class="input-instruction mt-2">Press Enter or click Search to find matching movie titles.</div>
+    </div>
+
+    <!-- Filter Row -->
+    @if (allResults.Count > 0)
+    {
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+            <div class="filter-pill">
+                <span class="text-muted">Release year:</span>
+                <select class="filter-select" @bind="selectedYear">
+                    <option value="">Any year</option>
+                    @foreach (var year in AvailableYears)
+                    {
+                        <option value="@year">@year</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+
+    <!-- Results Section -->
+    @if (isLoading)
+    {
+        <div class="empty-state-card">
+            <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
+            <span>Searching movies...</span>
+        </div>
+    }
+    else if (hasSearched && FilteredResults.Count == 0)
+    {
+        <div class="empty-state-card">
+            <p class="mb-0 fw-semibold text-dark">No movies found for “@lastSearchedQuery”</p>
+            <p class="mb-0 small text-muted mt-1">Try checking the spelling or searching for a shorter title.</p>
+        </div>
+    }
+    else if (FilteredResults.Count > 0)
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="results-heading mb-0">
+                @FilteredResults.Count @(FilteredResults.Count == 1 ? "result" : "results") for “@lastSearchedQuery”
+            </h2>
+            <span class="small text-muted">OMDb title match</span>
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            @foreach (var movie in FilteredResults)
+            {
+                <div class="movie-result-card">
+                    <img src="@movie.SafePosterUrl" alt="@movie.Title poster" class="result-poster" />
+
+                    <div class="flex-grow-1 min-w-0">
+                        <h3 class="result-title mb-1">@movie.Title</h3>
+                        <div class="result-meta mb-2">@movie.Year &nbsp;&middot;&nbsp; Movie</div>
+                        <div class="small text-muted">Not in your collection yet</div>
+                    </div>
+
+                    <div class="result-actions">
+                        <a href="movie/@movie.ImdbId" class="btn btn-brand-purple w-100 d-flex align-items-center justify-content-center gap-2 text-decoration-none">
+                            <!-- SVG PLACEHOLDER: eye.svg -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span>View movie</span>
+                        </a>
+
+                        <button type="button" class="btn btn-outline-plum w-100 d-flex align-items-center justify-content-center gap-2">
+                            <!-- SVG PLACEHOLDER: plus-purple.svg -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            <span>Add to watchlist</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state-card">
+            <p class="mb-0 text-muted">Awaiting search... Type a movie title above to explore.</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string searchQuery = "";
+    private string lastSearchedQuery = "";
+    private string selectedYear = "";
+    private bool isLoading = false;
+    private bool hasSearched = false;
+    private List<OmdbSearchItem> allResults = [];
+
+    private IEnumerable<string> AvailableYears => allResults
+        .Select(m => m.Year)
+        .Where(y => !string.IsNullOrWhiteSpace(y))
+        .Distinct()
+        .OrderByDescending(y => y);
+
+    private List<OmdbSearchItem> FilteredResults => string.IsNullOrWhiteSpace(selectedYear)
+        ? allResults
+        : allResults.Where(m => m.Year == selectedYear).ToList();
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ExecuteSearch();
+        }
+    }
+
+    private async Task ExecuteSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery)) return;
+
+        isLoading = true;
+        selectedYear = "";
+        lastSearchedQuery = searchQuery.Trim();
+
+        try
+        {
+            allResults = await OmdbService.SearchMoviesAsync(lastSearchedQuery);
+            hasSearched = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = "";
+        lastSearchedQuery = "";
+        selectedYear = "";
+        allResults = [];
+        hasSearched = false;
+    }
+}
