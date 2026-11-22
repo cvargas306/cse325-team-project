@@ -9,10 +9,16 @@
     --color-text-light-muted: #D6CDD5;
     --color-text-accent-muted: #E4DCE3;
     --color-badge-pink: #D8BCD2;
+    /* New App Shell Tokens */
+    --color-bg-canvas: #F7F6F4;
+    --color-bg-active-pill: #F1EAF0;
+    --color-border-subtle: #E8E4E8;
 }
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--color-bg-canvas);
+    color: var(--color-text-dark);
 }
 
 a, .btn-link {
@@ -238,4 +244,121 @@ h1:focus {
 .figma-checkbox:focus {
     border-color: var(--color-brand-purple, #713F69);
     box-shadow: 0 0 0 0.2rem rgba(113, 63, 105, 0.2);
+}
+
+/* Account Settings (/Account/Manage/*) Scoped Overrides */
+.manage-theme h3 {
+    color: var(--color-text-dark);
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.manage-theme .form-control {
+    border: 1px solid #8C818C;
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--color-text-dark);
+}
+
+.manage-theme .form-control:focus {
+    border-color: var(--color-brand-purple);
+    box-shadow: 0 0 0 0.2rem rgba(113, 63, 105, 0.2);
+}
+
+.manage-theme .form-control:disabled,
+.manage-theme .form-control[readonly] {
+    background-color: var(--color-bg-canvas);
+    color: var(--color-text-muted);
+    border-color: var(--color-border-subtle);
+}
+
+.manage-theme .form-floating>label {
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+/* Primary Buttons & Links styled as Buttons (fixes 2FA anchor alignment) */
+.manage-theme .btn-primary {
+    background-color: var(--color-brand-purple);
+    border-color: var(--color-brand-purple);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    min-height: 46px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.manage-theme .btn-primary:hover,
+.manage-theme .btn-primary:focus,
+.manage-theme .btn-primary:active {
+    background-color: #5d3356;
+    border-color: #5d3356;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.manage-theme .btn-link {
+    color: var(--color-brand-purple);
+    font-weight: 600;
+    text-decoration: none;
+    padding-left: 0;
+}
+
+.manage-theme .btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Destructive Delete Button (Warm Crimson to match Plum Palette + Spacing) */
+.manage-theme .btn-danger {
+    background-color: #9E2A3B;
+    border-color: #9E2A3B;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    min-height: 46px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.manage-theme .btn-danger:hover,
+.manage-theme .btn-danger:focus,
+.manage-theme .btn-danger:active {
+    background-color: #7E202E;
+    border-color: #7E202E;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Add clean spacing between stacked forms/buttons (fixes Personal Data Download + Delete) */
+.manage-theme form+p,
+.manage-theme form+form {
+    margin-top: 14px;
+}
+/* Fix empty .form-floating label + placeholder collision in Account Settings */
+.manage-theme .form-floating>label {
+    color: var(--color-text-muted);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+    opacity: 0.85;
+}
+
+.manage-theme .form-floating>.form-control::placeholder {
+    color: #9e96a0;
+    text-align: start !important;
+    opacity: 1;
+}
+
+.manage-theme .form-floating>.form-control:not(:focus):placeholder-shown {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
 }
