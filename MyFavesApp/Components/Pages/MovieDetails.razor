@@ -1,0 +1,299 @@
+@page "/movie/{ImdbId}"
+@* @attribute [Authorize] *@
+@rendermode InteractiveServer
+@using MyFavesApp.Services
+@inject OmdbService OmdbService
+@inject IConfiguration Config
+
+<PageTitle>@(movie?.Title ?? "Movie details") - My Faves</PageTitle>
+
+<div class="details-container">
+    <!-- Back Link -->
+    <div class="mb-4">
+        <a href="search" class="back-link text-decoration-none">
+            <!-- SVG PLACEHOLDER: arrow-left.svg -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m12 19-7-7 7-7M19 12H5" />
+            </svg>
+            <span>Back to Search movies</span>
+        </a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="figma-card p-5 text-center text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            <span>Loading movie details...</span>
+        </div>
+    }
+    else if (movie is null)
+    {
+        <div class="figma-card p-5 text-center">
+            <h2 class="h5 text-dark mb-2">Movie not found</h2>
+            <p class="text-muted small mb-3">We couldn't load details for this title.</p>
+            <a href="search" class="btn btn-brand-purple px-4">Return to search</a>
+        </div>
+    }
+    else
+    {
+        <!-- 1. Hero Section -->
+        <div class="hero-grid mb-4">
+            <div class="poster-col">
+                <img src="@movie.SafePosterUrl" alt="@movie.Title poster" class="hero-poster" />
+                <div class="collection-status-pill mt-3">
+                    <!-- SVG PLACEHOLDER: bookmark.svg -->
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#713F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                    </svg>
+                    <span>Not in your collection yet</span>
+                </div>
+            </div>
+
+            <div class="flex-grow-1 min-w-0">
+                <h1 class="movie-title mb-2">@movie.Title</h1>
+
+                <div class="d-flex flex-wrap align-items-center gap-3 meta-row mb-3">
+                    <span>@movie.Year</span>
+                    @if (!string.IsNullOrWhiteSpace(movie.Rated) && movie.Rated != "N/A")
+                    {
+                        <span class="rating-badge">@movie.Rated</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(movie.Runtime) && movie.Runtime != "N/A")
+                    {
+                        <span>@movie.Runtime</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(movie.Genre) && movie.Genre != "N/A")
+                    {
+                        <span>&middot;</span>
+                        <span>@movie.Genre</span>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <div class="section-sub-label mb-2">The story</div>
+                    <p class="story-text mb-0">@movie.Plot</p>
+                </div>
+
+                <div class="credits-list mb-4">
+                    @if (!string.IsNullOrWhiteSpace(movie.Director) && movie.Director != "N/A")
+                    {
+                        <div class="d-flex gap-2">
+                            <span class="text-muted">Director</span>
+                            <span class="text-dark fw-medium">@movie.Director</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(movie.Actors) && movie.Actors != "N/A")
+                    {
+                        <div class="text-muted">Starring @movie.Actors</div>
+                    }
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-brand-purple px-4 d-inline-flex align-items-center gap-2">
+                        <!-- SVG PLACEHOLDER: folder-plus.svg -->
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 10v6M9 13h6" />
+                            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                        </svg>
+                        <span>Manage watchlists</span>
+                    </button>
+                    @{
+                        var query = Uri.EscapeDataString($"{movie.Title} {movie.Year} official trailer");
+                    }
+                    <a href="https://youtube.com/results?search_query=@query"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-trailer px-4 d-inline-flex align-items-center gap-2 text-decoration-none">
+                        <!-- SVG PLACEHOLDER: play.svg -->
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#713F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polygon points="6 3 20 12 6 21 6 3" />
+                        </svg>
+                        <span>Watch trailer</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Where to Watch Card -->
+        <section class="figma-card mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                    <h2 class="card-heading-lg mb-1">Where to watch</h2>
+                    <p class="card-subtext mb-0">One movie. Your streaming options, together.</p>
+                </div>
+                <div class="region-pill">
+                    <span>United States</span>
+                </div>
+            </div>
+
+            @if (streamingSources.Count == 0)
+            {
+                <div class="text-muted small py-2">No US streaming sources found for this title right now.</div>
+            }
+            else
+            {
+                <div class="streaming-grid mb-3">
+                    @foreach (var source in streamingSources)
+                    {
+                        var style = GetProviderStyle(source.Name);
+                        <a href="@source.WebUrl" target="_blank" rel="noopener noreferrer" class="stream-provider-tile text-decoration-none">
+                            <div class="provider-badge" style="background-color: @style.Bg; color: @style.Fg; font-size: @style.FontSize;">
+                                @style.Label
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                @* <div class="provider-name text-truncate">@source.Name</div> *@
+                                <div class="provider-name">@source.Name</div>
+                                <div class="provider-type">@source.DisplayType</div>
+                            </div>
+                            <!-- SVG PLACEHOLDER: external-link.svg -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#713F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            </svg>
+                        </a>
+                    }
+                </div>
+            }
+
+            <div class="availability-disclaimer">
+                United States &middot; Illustrative availability only. Plans and titles vary by region and may change.
+            </div>
+        </section>
+
+        <!-- 3. Bottom Grid: Your Movie Journal + Film Details -->
+        <div class="bottom-grid">
+            <section class="figma-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="card-heading mb-0">Your movie journal</h2>
+                    <span class="small text-muted">Private to you</span>
+                </div>
+
+                <div class="d-flex flex-wrap gap-4 mb-3">
+                    <div>
+                        <div class="journal-label mb-2">Watch status</div>
+                        <div class="status-toggle-group">
+                            <button type="button"
+                                    class="status-toggle-btn @(watchStatus == "Want to Watch" ? "active" : "")"
+                                    @onclick='() => watchStatus = "Want to Watch"'>
+                                Want to Watch
+                            </button>
+                            <button type="button"
+                                    class="status-toggle-btn @(watchStatus == "Watched" ? "active" : "")"
+                                    @onclick='() => watchStatus = "Watched"'>
+                                ✓ Watched
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="journal-label mb-2">Your rating</div>
+                        <div class="d-flex align-items-center gap-1">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                var star = i;
+                                <button type="button" class="star-btn" @onclick="() => userRating = star">
+                                    @(star <= userRating ? "★" : "☆")
+                                </button>
+                            }
+                            <span class="small text-muted ms-1">@userRating/5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="journal-label">Your note</span>
+                        <button type="button" class="btn btn-link p-0 small fw-semibold text-decoration-none" style="color: var(--color-brand-purple);" @onclick="() => isEditingNote = !isEditingNote">
+                            @(isEditingNote ? "Done" : "Edit note")
+                        </button>
+                    </div>
+                    @if (isEditingNote)
+                    {
+                        <textarea class="form-control figma-input small" rows="2" @bind="userNote" placeholder="Write a personal note about this film..."></textarea>
+                    }
+                    else
+                    {
+                        <p class="small text-muted mb-0" style="line-height: 1.7;">
+                            @(string.IsNullOrWhiteSpace(userNote) ? "No note added yet. Click Edit note to jot down your thoughts." : userNote)
+                        </p>
+                    }
+                </div>
+            </section>
+
+            <!-- Right: Film Details -->
+            <section class="figma-card film-details-col">
+                <h2 class="card-heading mb-3">Film details</h2>
+
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <div class="detail-meta-label mb-1">Original language</div>
+                        <div class="detail-meta-value">@movie.Language</div>
+                    </div>
+                    <div>
+                        <div class="detail-meta-label mb-1">Release date</div>
+                        <div class="detail-meta-value">@movie.Released</div>
+                    </div>
+                    <div>
+                        <div class="detail-meta-label mb-1">Runtime</div>
+                        <div class="detail-meta-value">@movie.Runtime</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string ImdbId { get; set; } = "";
+
+    private OmdbMovieDetail? movie;
+    private List<WatchmodeSource> streamingSources = [];
+    private bool isLoading = true;
+
+    private string watchStatus = "Want to Watch";
+    private int userRating = 0;
+    private string userNote = "";
+    private bool isEditingNote = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var wmKey = Config["Watchmode:ApiKey"] ?? "";
+            var detailTask = OmdbService.GetMovieDetailsAsync(ImdbId);
+            var streamTask = OmdbService.GetUsStreamingSourcesAsync(ImdbId, wmKey);
+
+            await Task.WhenAll(detailTask, streamTask);
+
+            movie = await detailTask;
+            streamingSources = await streamTask;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static (string Bg, string Fg, string Label, string FontSize) GetProviderStyle(string name) =>
+        name.ToLowerInvariant() switch
+        {
+            var n when n.Contains("netflix") => ("#211F21", "#F44550", "N", "26px"),
+            var n when n.Contains("hulu") => ("#193B2D", "#9CEBC0", "hulu", "14px"),
+            var n when n.Contains("prime") => ("#EAF2F8", "#234F76", "prime", "14px"),
+            var n when n.Contains("amazon") => ("#232F3E", "#FF9900", "amzn", "13px"),
+            var n when n.Contains("roku") => ("#662D91", "#FFFFFF", "roku", "14px"),
+            var n when n.Contains("max") || n.Contains("hbo") => ("#0A1344", "#FFFFFF", "max", "15px"),
+            var n when n.Contains("discovery") => ("#0A2540", "#4EA8DE", "d+", "18px"),
+            var n when n.Contains("apple") => ("#1D1D1F", "#F5F5F7", "tv+", "16px"),
+            var n when n.Contains("fandango") || n.Contains("vudu") => ("#0B2240", "#FF7300", "FAH", "14px"),
+            var n when n.Contains("plex") => ("#282A2D", "#E5A00D", "plex", "14px"),
+            var n when n.Contains("disney") => ("#113CCF", "#FFFFFF", "D+", "18px"),
+            var n when n.Contains("peacock") => ("#141414", "#F5C518", "pcock", "12px"),
+            var n when n.Contains("paramount") => ("#0064FF", "#FFFFFF", "P+", "18px"),
+            var n when n.Contains("youtube") => ("#28181A", "#FF3B30", "YT", "16px"),
+            var n when n.Contains("tubi") => ("#1A1A1A", "#FA382F", "tubi", "14px"),
+            var n when n.Contains("pluto") => ("#121212", "#FFF200", "pluto", "13px"),
+            _ => ("#30232F", "#FFFFFF", name.Length >= 2 ? name[..2].ToUpperInvariant() : name.ToUpperInvariant(), "15px")
+        };
+}
