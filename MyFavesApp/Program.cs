@@ -38,6 +38,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddScoped<MyFavesApp.Services.WatchlistService>(); // Add the WatchlistService to the dependency injection container
 
 var app = builder.Build();
 
