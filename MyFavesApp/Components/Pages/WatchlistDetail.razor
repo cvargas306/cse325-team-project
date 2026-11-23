@@ -1,0 +1,85 @@
+@page "/watchlists/{Id:int}"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MyFavesApp.Data
+@using MyFavesApp.Services
+@inject WatchlistService Watchlist
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>@(list?.Name ?? "Watchlist") - My Faves</PageTitle>
+
+<div class="search-page-container">
+    <a href="watchlists" class="text-decoration-none small">&larr; All watchlists</a>
+
+    @if (isLoading)
+    {
+        <p class="text-muted mt-3">Loading...</p>
+    }
+    else if (list is null)
+    {
+        <h1 class="main-heading mt-3">List not found</h1>
+    }
+    else
+    {
+        <h1 class="main-heading mt-2 mb-4">@list.Name</h1>
+
+        @if (movies.Count == 0)
+        {
+            <div class="p-4 bg-white border rounded text-center text-muted">
+                No movies in this list yet.
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var movie in movies)
+                {
+                    <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded">
+                        @if (!string.IsNullOrWhiteSpace(movie.PosterUrl))
+                        {
+                            <img src="@movie.PosterUrl" alt="@movie.Title poster" style="width: 60px; border-radius: 6px;" />
+                        }
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@movie.Title</div>
+                            <div class="small text-muted">@movie.Year</div>
+                        </div>
+                        <a href="/movie/@movie.ImdbId" class="btn btn-brand-purple text-decoration-none">View</a>
+                        <button type="button" class="btn btn-outline-plum" @onclick="() => RemoveFromList(movie)">Remove</button>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private UserWatchlist? list;
+    private List<SavedMovie> movies = [];
+    private string? userId;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is not null)
+        {
+            list = await Watchlist.GetListAsync(userId, Id);
+            if (list is not null)
+                movies = await Watchlist.GetListMoviesAsync(userId, Id);
+        }
+        isLoading = false;
+    }
+
+    private async Task RemoveFromList(SavedMovie movie)
+    {
+        if (userId is null) return;
+        await Watchlist.RemoveFromListAsync(userId, Id, movie.Id);
+        movies.Remove(movie);
+    }
+}

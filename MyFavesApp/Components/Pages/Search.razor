@@ -1,7 +1,12 @@
 @page "/search"
 @rendermode InteractiveServer
 @using MyFavesApp.Services
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MyFavesApp.Data
 @inject OmdbService OmdbService
+@inject WatchlistService Watchlist
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Search movies - My Faves</PageTitle>
 
@@ -98,7 +103,7 @@
                     <div class="flex-grow-1 min-w-0">
                         <h3 class="result-title mb-1">@movie.Title</h3>
                         <div class="result-meta mb-2">@movie.Year &nbsp;&middot;&nbsp; Movie</div>
-                        <div class="small text-muted">Not in your collection yet</div>
+                        <div class="small text-muted"> @(savedIds.Contains(movie.ImdbId) ? "In your collection" : "Not in your collection yet")</div>
                     </div>
 
                     <div class="result-actions">
@@ -111,12 +116,14 @@
                             <span>View movie</span>
                         </a>
 
-                        <button type="button" class="btn btn-outline-plum w-100 d-flex align-items-center justify-content-center gap-2">
-                            <!-- SVG PLACEHOLDER: plus-purple.svg -->
+                        <button type="button"
+                            class="btn btn-outline-plum w-100 d-flex align-items-center justify-content-center gap-2"
+                            @onclick="() => AddToWatchlist(movie)"
+                            disabled="@savedIds.Contains(movie.ImdbId)">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 5v14M5 12h14" />
                             </svg>
-                            <span>Add to watchlist</span>
+                            <span>@(savedIds.Contains(movie.ImdbId) ? "In your favorites" : "Add to favorites")</span>
                         </button>
                     </div>
                 </div>
@@ -135,6 +142,8 @@
     private string searchQuery = "";
     private string lastSearchedQuery = "";
     private string selectedYear = "";
+    private HashSet<string> savedIds = new();
+    private string? userId;
     private bool isLoading = false;
     private bool hasSearched = false;
     private List<OmdbSearchItem> allResults = [];
@@ -183,5 +192,37 @@
         selectedYear = "";
         allResults = [];
         hasSearched = false;
+    }
+    protected override async Task OnInitializedAsync() //loads what is already saved in the watchlist for the user when the page is loaded
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is not null)
+        {
+            var saved = await Watchlist.GetMoviesAsync(userId);
+            savedIds = saved.Select(m => m.ImdbId).ToHashSet();
+        }
+    }
+
+    private async Task AddToWatchlist(OmdbSearchItem movie) //adds the movie to the watchlist for the user when the button is clicked
+    {
+        if (userId is null) return;
+
+        try
+        {
+            await Watchlist.AddAsync(userId, new SavedMovie
+            {
+                ImdbId = movie.ImdbId,
+                Title = movie.Title,
+                Year = movie.Year,
+                PosterUrl = movie.SafePosterUrl
+            });
+            savedIds.Add(movie.ImdbId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Could not save movie: {ex.Message}");
+        }
     }
 }

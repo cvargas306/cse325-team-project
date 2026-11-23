@@ -1,0 +1,94 @@
+@page "/watchlists"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MyFavesApp.Services
+@inject WatchlistService Watchlist
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation //reload the page after creating a new watchlist
+
+<PageTitle>Your watchlists - My Faves</PageTitle>
+
+<div class="search-page-container">
+    <h1 class="main-heading mb-2">Your watchlists</h1>
+    <p class="sub-heading mb-4">Group your movies into lists you name yourself.</p>
+
+    <div class="d-flex gap-2 mb-2">
+        <input class="form-control" style="max-width: 320px;"
+               placeholder="e.g., Family Night"
+               @bind="newName" @bind:event="oninput"
+               @onkeydown="HandleKeyDown" />
+        <button type="button" class="btn btn-brand-purple" @onclick="Create">Create list</button>
+    </div>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="small text-muted mb-3">@message</div>
+    }
+
+    @if (lists.Count == 0)
+    {
+        <p class="text-muted mt-3">No watchlists yet. Name your first one above.</p>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3 mt-3">
+            @foreach (var list in lists)
+            {
+                <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded">
+                    <div class="flex-grow-1">
+                        <a href="watchlists/@list.Id" class="fw-semibold text-decoration-none">@list.Name</a>
+                        <div class="small text-muted">
+                            @list.MovieCount @(list.MovieCount == 1 ? "movie" : "movies")
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-plum" @onclick="() => Delete(list.Id)">Delete</button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<WatchlistSummary> lists = [];
+    private string newName = "";
+    private string message = "";
+    private string? userId;
+
+    protected override async Task OnInitializedAsync() //  This method is called when the component is initialized. It retrieves the authentication state and user ID, then loads the user's watchlists.
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        if (userId is not null)
+            lists = await Watchlist.GetListsAsync(userId);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e) // This method is called when a key is pressed in the input field. If the Enter key is pressed, it calls the Create method to create a new watchlist.
+    {
+        if (e.Key == "Enter") await Create();
+    }
+
+    private async Task Create() // This method is called to create a new watchlist. It checks if the user is logged in, then calls the Watchlist service to create a new list with the specified name. If successful, it clears the input field and reloads the watchlists; otherwise, it displays an error message.
+    {
+        if (userId is null) return;
+
+        var ok = await Watchlist.CreateListAsync(userId, newName);
+        if (ok)
+        {
+            Navigation.NavigateTo("watchlists", forceLoad: true);
+            return;
+        }
+        message = "Please enter a name you haven't used yet.";
+    }
+
+    private async Task Delete(int id)
+    {
+        if (userId is null) return;
+        await Watchlist.DeleteListAsync(userId, id);
+        Navigation.NavigateTo("watchlists", forceLoad: true);
+    }
+}

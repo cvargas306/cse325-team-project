@@ -2,10 +2,13 @@
 @* @attribute [Authorize] *@
 @rendermode InteractiveServer
 @using MyFavesApp.Services
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MyFavesApp.Data
 @inject OmdbService OmdbService
 @inject IConfiguration Config
-
-<PageTitle>@(movie?.Title ?? "Movie details") - My Faves</PageTitle>
+@inject WatchlistService Watchlist
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="details-container">
     <!-- Back Link -->
@@ -45,7 +48,7 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#713F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
                     </svg>
-                    <span>Not in your collection yet</span>
+                    <span>@(isSaved ? "In your collection" : "Not in your collection yet")</span>
                 </div>
             </div>
 
@@ -90,13 +93,34 @@
 
                 <!-- Action Buttons -->
                 <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-brand-purple px-4 d-inline-flex align-items-center gap-2">
+                    @if (myLists.Count > 0)
+                    {
+                        <div class="mt-3">
+                            <div class="section-sub-label mb-2">Add to your watchlists</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var l in myLists)
+                                {
+                                    <button type="button"
+                                            class="status-toggle-btn @(inLists.Contains(l.Id) ? "active" : "")"
+                                            @onclick="() => ToggleList(l.Id)">
+                                        @(inLists.Contains(l.Id) ? "✓ " : "")@l.Name
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted mt-3">Use the + in the sidebar to create a watchlist for this movie.</div>
+                    }
+                    <button type="button" class="btn btn-brand-purple px-4 d-inline-flex align-items-center gap-2 " @onclick="ToggleSaved" disabled="@isSaving"> 
                         <!-- SVG PLACEHOLDER: folder-plus.svg -->
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 10v6M9 13h6" />
                             <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
                         </svg>
-                        <span>Manage watchlists</span>
+                        
+                        <span>@(isSaved ? "Remove from watchlist" : "Add to watchlist")</span>
                     </button>
                     @{
                         var query = Uri.EscapeDataString($"{movie.Title} {movie.Year} official trailer");
@@ -249,6 +273,11 @@
     private OmdbMovieDetail? movie;
     private List<WatchmodeSource> streamingSources = [];
     private bool isLoading = true;
+    private bool isSaved = false;
+    private bool isSaving = false;
+    private string? userId;
+    private List<WatchlistSummary> myLists = []; // List of watchlists the user belongs to
+    private HashSet<int> inLists = []; // Set of watchlist IDs that already contain this movie
 
     private string watchStatus = "Want to Watch";
     private int userRating = 0;
@@ -260,6 +289,16 @@
         isLoading = true;
         try
         {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync(); // Get the authentication state
+            userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Get the user ID from the authentication state
+            isSaved = userId is not null && await Watchlist.IsSavedAsync(userId, ImdbId); // Check if the movie is saved in the user's watchlist
+            
+            if (userId is not null)
+            {
+                myLists = await Watchlist.GetListsAsync(userId); // Get the user's watchlists
+                inLists = await Watchlist.GetListIdsForMovieAsync(userId, ImdbId); // Get the IDs of the watchlists that already contain this movie
+            }
+            
             var wmKey = Config["Watchmode:ApiKey"] ?? "";
             var detailTask = OmdbService.GetMovieDetailsAsync(ImdbId);
             var streamTask = OmdbService.GetUsStreamingSourcesAsync(ImdbId, wmKey);
@@ -296,4 +335,65 @@
             var n when n.Contains("pluto") => ("#121212", "#FFF200", "pluto", "13px"),
             _ => ("#30232F", "#FFFFFF", name.Length >= 2 ? name[..2].ToUpperInvariant() : name.ToUpperInvariant(), "15px")
         };
+    private async Task ToggleSaved() // Add or remove the movie from the user's watchlist
+    {
+        if (userId is null || movie is null) return;
+
+        isSaving = true;
+        try
+        {
+            if (isSaved)
+            {
+                await Watchlist.RemoveAsync(userId, ImdbId);
+                isSaved = false;
+            }
+            else
+            {
+                await Watchlist.AddAsync(userId, new SavedMovie
+                {
+                    ImdbId = ImdbId,
+                    Title = movie.Title,
+                    Year = movie.Year,
+                    PosterUrl = movie.SafePosterUrl,
+                    Status = watchStatus,
+                    Rating = userRating,
+                    Note = userNote
+                });
+                isSaved = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Could not update watchlist: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+    private async Task ToggleList(int listId) // Add or remove the movie from a specific watchlist
+    {
+        if (userId is null || movie is null) return;
+
+        try
+        {
+            var nowIn = await Watchlist.ToggleInListAsync(userId, listId, new SavedMovie 
+            {
+                ImdbId = ImdbId,
+                Title = movie.Title,
+                Year = movie.Year,
+                PosterUrl = movie.SafePosterUrl,
+                Status = watchStatus,
+                Rating = userRating,
+                Note = userNote
+            });
+
+            if (nowIn) { inLists.Add(listId); isSaved = true; }
+            else inLists.Remove(listId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Could not update list: {ex.Message}");
+        }
+    }
 }

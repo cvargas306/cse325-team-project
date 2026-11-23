@@ -1,0 +1,82 @@
+@page "/watchlist"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MyFavesApp.Data
+@using MyFavesApp.Services
+@inject WatchlistService Watchlist
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>My watchlist - My Faves</PageTitle>
+
+<div class="search-page-container">
+    <h1 class="main-heading mb-2">My favorites</h1>
+    <p class="sub-heading mb-4">The favorite movies you've saved.</p>
+
+    @if (isLoading)
+    {
+        <p class="text-muted">Loading your movies...</p>
+    }
+    else if (userId is null)
+    {
+        <p class="text-muted">Please log in to see your watchlist.</p>
+    }
+    else if (movies.Count == 0)
+    {
+        <div class="p-4 bg-white border rounded text-center">
+            <p class="mb-2 fw-semibold">Nothing saved yet</p>
+            <a href="/search" class="btn btn-brand-purple text-decoration-none">Search movies</a>
+        </div>
+    }
+    else
+    {
+        <div class="small text-muted mb-3">
+            @movies.Count @(movies.Count == 1 ? "movie" : "movies") saved
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            @foreach (var movie in movies)
+            {
+                <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded"> 
+                    @if (!string.IsNullOrWhiteSpace(movie.PosterUrl)) //validate that the PosterUrl is not null or empty before rendering the image
+                    {
+                        <img src="@movie.PosterUrl" alt="@movie.Title poster" style="width: 60px; border-radius: 6px;" />
+                    }
+
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">@movie.Title</div>
+                        <div class="small text-muted">@movie.Year &nbsp;&middot;&nbsp; @movie.Status</div>
+                    </div>
+
+                    <a href="/movie/@movie.ImdbId" class="btn btn-brand-purple text-decoration-none">View</a>
+                    <button type="button" class="btn btn-outline-plum" @onclick="() => Remove(movie)">Remove</button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<SavedMovie> movies = [];
+    private string? userId;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Get the user ID from the authentication state
+
+        if (userId is not null)
+            movies = await Watchlist.GetMoviesAsync(userId);
+
+        isLoading = false;
+    }
+
+    private async Task Remove(SavedMovie movie)
+    {
+        if (userId is null) return;
+
+        await Watchlist.RemoveAsync(userId, movie.ImdbId);
+        movies.Remove(movie);
+    }
+}
