@@ -12,7 +12,6 @@ public class OmdbService(HttpClient httpClient, IConfiguration config)
             return [];
 
         var url = $"https://omdbapi.com/?apikey={_apiKey}&type=movie&s={Uri.EscapeDataString(query.Trim())}";
-        Console.WriteLine(url);
         var response = await httpClient.GetFromJsonAsync<OmdbSearchResponse>(url);
         if (response?.Response == "True" && response.Search is not null)
             return response.Search;
@@ -24,7 +23,6 @@ public class OmdbService(HttpClient httpClient, IConfiguration config)
         if (string.IsNullOrWhiteSpace(imdbId)) return null;
 
         var url = $"https://omdbapi.com/?apikey={_apiKey}&i={Uri.EscapeDataString(imdbId)}&plot=full";
-        Console.WriteLine(url);
         var detail = await httpClient.GetFromJsonAsync<OmdbMovieDetail>(url);
 
         return detail?.Response == "True" ? detail : null;
@@ -36,14 +34,12 @@ public class OmdbService(HttpClient httpClient, IConfiguration config)
             return [];
 
         var searchUrl = $"https://api.watchmode.com/v1/search/?apiKey={watchmodeApiKey}&search_field=imdb_id&search_value={Uri.EscapeDataString(imdbId)}";
-        Console.WriteLine(searchUrl);
         var searchResult = await httpClient.GetFromJsonAsync<WatchmodeSearchResponse>(searchUrl);
 
         var titleId = searchResult?.TitleResults?.FirstOrDefault()?.Id;
         if (titleId is null) return [];
 
         var sourcesUrl = $"https://api.watchmode.com/v1/title/{titleId}/sources/?apiKey={watchmodeApiKey}";
-        Console.WriteLine(sourcesUrl);
         var sources = await httpClient.GetFromJsonAsync<List<WatchmodeSource>>(sourcesUrl) ?? [];
 
         return sources
